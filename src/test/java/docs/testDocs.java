@@ -1,4 +1,4 @@
-package getRequest;
+package docs;
 
 import org.junit.Test;
 
@@ -6,16 +6,12 @@ import junit.framework.Assert;
 
 import static io.restassured.RestAssured.*;
 
-public class getData {
+public class testDocs {
 	
-	/*
-	 * Sample structure of a REST Assured API endpoint testing.
-	 * Unrelated to ECSE 429 project.
-	 * Used as template.
-	 * 
-	 */
+	String url = "http://localhost:4567/";
+	String endpoint = "docs";
 	
-	String api = "https://samples.openweathermap.org/data/2.5/weather?q=London,uk&appid=b6907d289e10d714a6e88b30761fae22"; 
+	String api = url + endpoint;
 	
 	@Test
 	public void testResponseCode() {
