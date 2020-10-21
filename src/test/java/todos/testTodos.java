@@ -10,6 +10,9 @@ import junit.framework.Assert;
 
 import static io.restassured.RestAssured.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class testTodos {
 	
 	String url = "http://localhost:4567/";
@@ -18,21 +21,17 @@ public class testTodos {
 	String api = url + endpoint;
 	
 	@Test
-	public void testCreateTodoWithValidParameters() {
+	public void testCreateTodoWithTitleAndDescription() {
 			
 		String title = "Wash dishes";
 		String description = "Must not forget to wash dishes.";
 		
-		Response res = given().urlEncodingEnabled(true)
-							.param("title", title)
-							.param("description", description)
-							.header("Accept", "application/json")
-				            .contentType("application/x-www-form-urlencoded")
-							.post(api);
+		Response res = given().contentType("application/json; charset=utf-8").accept(ContentType.ANY).when().post(api+"?title="+title+"&description="+description);
+		res.prettyPrint();
 		
 		ResponseBody body = res.getBody();
 		String bodyAsString = body.asString();
-		System.out.println(bodyAsString);
+		
 		Assert.assertEquals(bodyAsString.contains("dishes"),  true);
 		
 	}
