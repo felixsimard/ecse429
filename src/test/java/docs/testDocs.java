@@ -2,6 +2,9 @@ package docs;
 
 import org.junit.Test;
 
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.response.ResponseBody;
 import junit.framework.Assert;
 
 import static io.restassured.RestAssured.*;
@@ -14,16 +17,15 @@ public class testDocs {
 	String api = url + endpoint;
 	
 	@Test
-	public void testResponseCode() {
+	public void testPageLoad() {
 		int code  = get(api).getStatusCode();
-		System.out.println("Received code: " + code);
 		Assert.assertEquals(code,  200);
 	}
 	
 	@Test
-	public void testBody() {
-		Long time = get(api).getTime();
-		System.out.println("Response time: " + time);
+	public void testBodyAsHtml() {
+		String body = get(api).getBody().asString();
+		Assert.assertEquals(body.contains("<html>"), true);
 	}
 
 }
