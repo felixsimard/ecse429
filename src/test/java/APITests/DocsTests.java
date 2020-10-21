@@ -1,15 +1,12 @@
-package docs;
+package APITests;
 
 import org.junit.Test;
 
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.restassured.response.ResponseBody;
 import junit.framework.Assert;
 
 import static io.restassured.RestAssured.*;
 
-public class testDocs {
+public class DocsTests {
 	
 	String url = "http://localhost:4567/";
 	String endpoint = "docs";

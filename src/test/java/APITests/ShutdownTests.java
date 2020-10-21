@@ -1,4 +1,4 @@
-package shutdown;
+package APITests;
 
 import static io.restassured.RestAssured.get;
 
@@ -6,14 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.junit.Before;
-import org.junit.After;
 import org.junit.Test;
 
 import io.restassured.response.Response;
 import junit.framework.Assert;
 
-public class testShutdown {
+public class ShutdownTests {
 
 	String url = "http://localhost:4567/";
 	String endpoint = "shutdown";

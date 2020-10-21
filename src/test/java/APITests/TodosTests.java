@@ -1,19 +1,14 @@
-package todos;
+package APITests;
 
 import org.junit.Test;
 
-import io.restassured.*;
 import io.restassured.http.ContentType;
 import io.restassured.response.*;
-import io.restassured.specification.*;
 import junit.framework.Assert;
 
 import static io.restassured.RestAssured.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class testTodos {
+public class TodosTests {
 	
 	String url = "http://localhost:4567/";
 	String endpoint = "todos";
