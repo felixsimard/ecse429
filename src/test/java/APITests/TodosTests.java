@@ -1,35 +1,44 @@
 package APITests;
 
+import org.json.simple.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 
+import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.http.Method;
 import io.restassured.response.*;
+import io.restassured.specification.RequestSpecification;
 import junit.framework.Assert;
 
 import static io.restassured.RestAssured.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TodosTests {
 	
-	String url = "http://localhost:4567/";
-	String endpoint = "todos";
-	
-	String api = url + endpoint;
+	@Before 
+	public void setUp() {
+		RestAssured.baseURI = "http://localhost:4567";
+	}
 	
 	@Test
-	public void testCreateTodoWithTitleAndDescription() {
-			
-		String title = "Wash dishes";
-		String description = "Must not forget to wash dishes.";
+	public void testCreateTodoValidInfo() {
 		
-		Response res = given().contentType("application/json; charset=utf-8").accept(ContentType.ANY).when().post(api+"?title="+title+"&description="+description);
-		res.prettyPrint();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("title", "play guitar");
+		JSONObject requestParams = new JSONObject();
+		requestParams.put("title", "play guitar");
 		
-		ResponseBody body = res.getBody();
-		String bodyAsString = body.asString();
+		Response response = given()
+			.body(requestParams.toJSONString())
+			.when()
+			.post("/todos").then().statusCode(200).extract().response();
 		
-		Assert.assertEquals(bodyAsString.contains("dishes"),  true);
-		
+		String titleResponse = response.jsonPath().getString("title");
+		assertEquals(titleResponse,"play guitar");
 	}
-
-
+	
 }
