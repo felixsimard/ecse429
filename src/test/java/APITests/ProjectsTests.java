@@ -4,17 +4,25 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.json.simple.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
+import java.io.IOException;
+
+import static APITests.ApplicationManipulation.startApplication;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 public class ProjectsTests {
 
+    private static final int CREATED_STATUS_CODE = 201;
+    private static final int OK_STATUS_CODE = 200;
     public ProjectsTests() {
         RestAssured.baseURI = "http://localhost:4567/projects";
+    }
 
+    @Before
+    public void setUp() {
+        startApplication();
     }
 
     @Test
@@ -35,11 +43,34 @@ public class ProjectsTests {
 
         request.post().then().
                 assertThat().
+                statusCode(CREATED_STATUS_CODE).
                 body("title", equalTo(title),
                         "completed", equalTo(String.valueOf(completed)),
                         "active", equalTo(String.valueOf(active)),
                         "description", equalTo(String.valueOf(description)));
+    }
 
+    @Test
+    public void testCreateProjectNoInfo() {
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.post().then().
+                assertThat().
+                statusCode(CREATED_STATUS_CODE).
+                body("title", equalTo(""),
+                        "completed", equalTo(String.valueOf(false)),
+                        "active", equalTo(String.valueOf(false)),
+                        "description", equalTo(String.valueOf("")));
+
+
+    }
+
+    @Test
+    public void testGetAllProjects() {
 
     }
 
