@@ -25,6 +25,16 @@ public class TodosTests {
 	}
 	
 	@Test
+	public void getAllTodos() {
+		
+	}
+	
+	@Test
+	public void getTodoById() {
+		
+	}
+	
+	@Test
 	public void testCreateTodoValidInfo() {
 		
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -40,5 +50,56 @@ public class TodosTests {
 		String titleResponse = response.jsonPath().getString("title");
 		assertEquals(titleResponse,"play guitar");
 	}
+	
+	@Test 
+	public void testCreateToDoAllInfo() {
+		
+	}
+	
+	@Test 
+	public void testCreateTodoNoTitle() {
+		
+	}
+	
+	@Test
+	public void testAddTodoToProject() {
+		
+	}
+	
+	@Test
+	public void testAddTodoToNonExistingProject() {
+		
+	}
+	
+	@Test
+	public void testRemoveTodoFromProject() {
+		
+	}
+	
+	@Test
+	public void testGetAllTodoProjects() {
+		
+	}
+	
+	@Test
+	public void testAddTodoToCategory() {
+		
+	}
+	
+	@Test
+	public void testAddTodoToNonExistingCategory() {
+		
+	}
+	
+	@Test
+	public void testRemoveTodoFromCategory() {
+		
+	}
+	
+	@Test
+	public void testGetAllTodoCategories() {
+		
+	}
+	
 	
 }
