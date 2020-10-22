@@ -8,6 +8,7 @@ import org.junit.*;
 
 import java.io.IOException;
 
+import static APITests.ApplicationManipulation.startApplication;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -21,12 +22,7 @@ public class ProjectsTests {
 
     @Before
     public void setUp() {
-        Runtime rt = Runtime.getRuntime();
-        try {
-            Process pr = rt.exec("java -jar runTodoManagerRestAPI-1.5.5.jar");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        startApplication();
     }
 
     @Test
