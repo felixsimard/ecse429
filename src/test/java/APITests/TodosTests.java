@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
+import io.restassured.path.xml.XmlPath;
 import io.restassured.response.*;
 import io.restassured.specification.RequestSpecification;
 
@@ -14,13 +15,16 @@ import static io.restassured.RestAssured.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 
 
-public class TodosTests {
+public class TodosTests extends BaseTestSetup {
 
 	private static final int STATUS_CODE_SUCCESS = 200;
 	private static final int STATUS_CODE_CREATED = 201;
@@ -37,21 +41,81 @@ public class TodosTests {
 	 */
 	ArrayList<String> categoryError = new ArrayList<String>(Arrays.asList("Could not find thing matching value for id"));
 
+	/**
+	 * Constructor which sets the base uri before runnning the tests.
+	 */
+	public TodosTests() {
+		RestAssured.baseURI = "http://localhost:4567";
+	}
+	
+	/**
+	 * Test that it can run from the command lind
+	 * @throws IOException
+	 */
+	@Test
+    public void testGetAllTodosCommandLineQuery() throws IOException {
+        String title1 = "todo DUMMY";
+        try {
+	        createTodo(title1);
+	
+	        String curlRequest = "curl -v http://localhost:4567/todos";
+	        java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(curlRequest).getInputStream()).useDelimiter("\\A");
+	        String response = s.hasNext() ? s.next() : "";
+	
+	        assert (response.contains(title1));
+        }catch (Exception e) {
+			System.out.println(e);
+			Assert.fail();
+		}
+    }
 
 	/**
-	 * Will clear the data and set up baseURI before each test
-	 * 
+	 * Test that xml can be inputted.
+	 * @throws ParserConfigurationException
 	 */
-	@Before 
-	public void setUp() {
-		RestAssured.baseURI = "http://localhost:4567";
-		ApplicationManipulation.startApplication();
-	}
+    @Test
+    public void testCreateTodoXML() throws ParserConfigurationException {
+        String title = "todo DUMMY";
+        StringBuilder xmlBuilder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        xmlBuilder.append("<todo>").append("<title>" + title + "</title>");
+        xmlBuilder.append("</todo>");
 
-	//	@After
-	//	public void tearDown() {
-	//		ApplicationManipulation.stopApplication();
-	//	}
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/xml");
+        request.header("Accept", "application/xml");
+
+        request.body(xmlBuilder.toString());
+
+        request.when().post("/todos").then().
+                assertThat().
+                statusCode(equalTo(STATUS_CODE_CREATED));
+    }
+    
+	/**
+	 * Test that request fails if xml is not structured correctly.
+	 * @throws ParserConfigurationException
+	 */
+    @Test
+    public void testCreateTodoBadXML() throws ParserConfigurationException {
+        String title = "todo DUMMY";
+        StringBuilder xmlBuilder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        xmlBuilder.append("<randomness").append("<title>" + title + "</title>");
+        xmlBuilder.append("</todo>");
+
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/xml");
+        request.header("Accept", "application/xml");
+
+        request.body(xmlBuilder.toString());
+
+        request.when().post("/todos").then().
+                assertThat().
+                statusCode(equalTo(STATUS_CODE_FAILURE));
+    }
 
 	/**
 	 * Will test the endpoint GET /todos - get all todos created
@@ -74,6 +138,52 @@ public class TodosTests {
 	public void testCreateTodoValidInfo() {
 
 		String title = "Must complete ECSE429 project";
+
+		RequestSpecification request = RestAssured.given();
+
+		JSONObject requestParams = new JSONObject();
+		requestParams.put("title", title);
+
+		request.body(requestParams.toJSONString());
+
+		request.post("/todos")
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_CREATED))
+		.body("title", equalTo(title));
+	}
+	
+	/**
+	 * Test: create a valid todo with int as title.
+	 * Endpoint: POST /todos
+	 */
+	@Test
+	public void testCreateTodoNumberAsTitleSuccess() {
+
+		int title = 4;
+
+		RequestSpecification request = RestAssured.given();
+
+		JSONObject requestParams = new JSONObject();
+		requestParams.put("title", title);
+
+		request.body(requestParams.toJSONString());
+
+		request.post("/todos")
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_CREATED))
+		.body("title", equalTo(String.valueOf((float) title)));
+	}
+	
+	/**
+	 *Test: create a valid todo with int as title but show it fails.
+	 * Endpoint: POST /todos
+	 */
+	@Test
+	public void testCreateTodoNumberAsTitleFailure() {
+
+		int title = 4;
 
 		RequestSpecification request = RestAssured.given();
 

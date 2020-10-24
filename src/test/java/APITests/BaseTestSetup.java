@@ -18,13 +18,13 @@ public class BaseTestSetup {
         try {
             boolean appStarted = false;
             Process process = startApplication();
-            Thread.sleep(800);
+            Thread.sleep(200);
             while (!appStarted) {
                 try {
                     get("http://localhost:4567/");
                     appStarted = true;
                 } catch (Exception e){
-                    Thread.sleep(300);
+                    Thread.sleep(200);
                 }
             }
         } catch (InterruptedException e) {
