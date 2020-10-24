@@ -25,9 +25,9 @@ public class CategoriesTests {
         requestBody.put("description", description);
 
         given()
-                .body(requestBody.toJSONString())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
+                .body(requestBody.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories")
@@ -48,10 +48,10 @@ public class CategoriesTests {
         requestBody.put("title", title);
 
         given()
-                .body(requestBody.toJSONString())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .baseUri(BASEURI)
+                .body(requestBody.toJSONString())
 
                 .post("/categories")
 
@@ -70,9 +70,9 @@ public class CategoriesTests {
         requestBody.put("description", description);
 
         given()
-                .body(requestBody.toJSONString())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
+                .body(requestBody.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories")
@@ -95,6 +95,19 @@ public class CategoriesTests {
     }
 
     @Test
+    public void testGetAllCategoryHeads() {
+        given()
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .baseUri(BASEURI)
+
+                .head("/categories")
+
+                .then()
+                .assertThat().statusCode(SUCCESS_STATUS_CODE);
+    }
+
+    @Test
     public void testGetCategoryFromValidId() {
         String id = CategoriesHelper.createCategory("Test title", "Test description");
 
@@ -111,8 +124,7 @@ public class CategoriesTests {
     }
 
     @Test
-    public void testDeleteCategoryFromValidId() {
-
+    public void testGetHeadOfCategoryFromValidId() {
         String id = CategoriesHelper.createCategory("Test title", "Test description");
 
         given()
@@ -120,14 +132,14 @@ public class CategoriesTests {
                 .header("Accept", "application/json")
                 .baseUri(BASEURI)
 
-                .delete("/categories/" + id)
+                .head("/categories/" + id)
 
                 .then()
                 .assertThat().statusCode(SUCCESS_STATUS_CODE);
     }
 
     @Test
-    public void testModifyCategoryTitleAndDescriptionFromValidId() {
+    public void testPostModifyCategoryTitleAndDescriptionFromValidId() {
         String old_title = "Old title";
         String old_description = "Old description";
 
@@ -156,7 +168,52 @@ public class CategoriesTests {
     }
 
     @Test
-    public void testGetAllProjectsLinkedToCategoryFromValidId() {
+    public void testPutModifyCategoryTitleAndDescriptionFromValidId() {
+        String old_title = "Old title";
+        String old_description = "Old description";
 
+        String new_title = "New title";
+        String new_description = "New description";
+
+        String id = CategoriesHelper.createCategory(old_title, old_description);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("title", new_title);
+        requestBody.put("description", new_description);
+
+        given()
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body(requestBody.toJSONString())
+                .baseUri(BASEURI)
+
+                .put("/categories/" + id)
+
+                .then()
+                .assertThat().statusCode(SUCCESS_STATUS_CODE)
+                .assertThat().body(containsString(id))
+                .assertThat().body(containsString(new_title))
+                .assertThat().body(containsString(new_description));
+    }
+
+    @Test
+    public void testDeleteCategoryFromValidId() {
+
+        String id = CategoriesHelper.createCategory("Test title", "Test description");
+
+        given()
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .baseUri(BASEURI)
+
+                .delete("/categories/" + id)
+
+                .then()
+                .assertThat().statusCode(SUCCESS_STATUS_CODE);
+    }
+
+    @Test
+    public void testGetAllProjectsOfCategoryFromValidId() {
+        
     }
 }
