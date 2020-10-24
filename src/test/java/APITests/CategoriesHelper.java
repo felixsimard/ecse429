@@ -1,4 +1,5 @@
 package APITests;
+import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
@@ -6,6 +7,7 @@ import org.json.simple.JSONObject;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 public abstract class CategoriesHelper {
 
@@ -36,4 +38,50 @@ public abstract class CategoriesHelper {
 
         return response.jsonPath().getString("id");
     }
+
+    public static String createProject() {
+        String title = "proj1";
+        boolean completed = false;
+        boolean active = true;
+        String description = "this is a proj";
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("title", title);
+        requestBody.put("completed", completed);
+        requestBody.put("active", active);
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+        request.body(requestBody);
+
+        Response response = request.post();
+
+        response.then().
+                assertThat().
+                statusCode(CREATED_STATUS_CODE).
+                body("title", equalTo(title),
+                        "completed", equalTo(String.valueOf(completed)),
+                        "active", equalTo(String.valueOf(active)),
+                        "description", equalTo(String.valueOf(description)));
+
+        return response.jsonPath().get("id");
+    }
+
+    public static String createTodo() {
+        RequestSpecification request = RestAssured.given();
+
+        String title = "test title";
+
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("title", title);
+
+        request.body(requestParams.toJSONString());
+
+        Response response = request.post("/todos");
+
+        return response.jsonPath().get("id");
+    }
+
 }
