@@ -49,22 +49,23 @@ public abstract class CategoriesHelper {
         requestBody.put("title", title);
         requestBody.put("completed", completed);
         requestBody.put("active", active);
+        requestBody.put("description", description);
 
         RequestSpecification request = given();
 
-        request.header("Content-Type", "application/json");
-        request.header("Accept", "application/json");
-        request.body(requestBody);
+        request.header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body(requestBody.toJSONString())
+                .baseUri(BASEURI);
 
-        Response response = request.post();
 
-        response.then().
-                assertThat().
-                statusCode(CREATED_STATUS_CODE).
-                body("title", equalTo(title),
-                        "completed", equalTo(String.valueOf(completed)),
-                        "active", equalTo(String.valueOf(active)),
-                        "description", equalTo(String.valueOf(description)));
+        Response response = request.post("/projects");
+
+        response.then()
+                .assertThat().statusCode(CREATED_STATUS_CODE)
+                .assertThat().body(containsString("id"))
+                .assertThat().body(containsString(title))
+                .assertThat().body(containsString(description));
 
         return response.jsonPath().get("id");
     }
@@ -77,9 +78,14 @@ public abstract class CategoriesHelper {
         JSONObject requestParams = new JSONObject();
         requestParams.put("title", title);
 
-        request.body(requestParams.toJSONString());
+        request.header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body(requestParams.toJSONString())
+                .baseUri(BASEURI);
 
         Response response = request.post("/todos");
+
+        response.then().assertThat().statusCode(CREATED_STATUS_CODE);
 
         return response.jsonPath().get("id");
     }

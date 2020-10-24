@@ -4,6 +4,8 @@ import io.restassured.RestAssured;
 import org.json.simple.JSONObject;
 import org.junit.Test;
 
+import javax.security.auth.login.CredentialException;
+
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -59,6 +61,26 @@ public class CategoriesTests {
                 .assertThat().statusCode(CREATED_STATUS_CODE)
                 .assertThat().body(containsString("id"))
                 .assertThat().body(containsString(title));
+    }
+
+    @Test
+    public void testCreateCategoryWithXml() {
+
+        String title = "Jet Category";
+        String description = "Working from private jet";
+
+
+        given()
+                .header("Content-Type", "application/xml")
+                .header("Accept", "application/xml")
+                .param("description", description)
+                .param("title", title)
+                .baseUri(BASEURI)
+
+                .post("/categories")
+
+                .then()
+                .assertThat().statusCode(FAILED_STATUS_CODE);
     }
 
     @Test
@@ -217,17 +239,19 @@ public class CategoriesTests {
         String projectId = CategoriesHelper.createProject();
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("id", projectId);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + projectId)
+                .body(requestBody.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/projects")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
     }
 
     @Test
@@ -237,29 +261,33 @@ public class CategoriesTests {
 
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody1 = new JSONObject();
+        requestBody1.put("id", projectId1);
+
+        JSONObject requestBody2 = new JSONObject();
+        requestBody2.put("id", projectId2);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + projectId1)
+                .body(requestBody1.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/projects")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId1));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + projectId2)
+                .body(requestBody2.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/projects")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId2));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
@@ -270,8 +298,8 @@ public class CategoriesTests {
 
                 .then()
                 .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId1))
-                .assertThat().body(containsString("id: " + projectId2));
+                .assertThat().body(containsString("id\":\"" + projectId1))
+                .assertThat().body(containsString("id\":\"" + projectId2));
     }
 
     @Test
@@ -281,29 +309,33 @@ public class CategoriesTests {
 
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody1 = new JSONObject();
+        requestBody1.put("id", projectId1);
+
+        JSONObject requestBody2 = new JSONObject();
+        requestBody2.put("id", projectId2);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + projectId1)
+                .body(requestBody1.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/projects")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId1));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + projectId2)
+                .body(requestBody2.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/projects")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId2));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
@@ -321,17 +353,19 @@ public class CategoriesTests {
         String projectId = CategoriesHelper.createProject();
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("id", projectId);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + projectId)
+                .body(requestBody.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/projects")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + projectId));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
@@ -344,29 +378,24 @@ public class CategoriesTests {
                 .assertThat().statusCode(SUCCESS_STATUS_CODE);
     }
 
-    /////////////////////////---------------------------
-    /////////////////////////---------------------------
-    /////////////////////////---------------------------
-    /////////////////////////---------------------------
-    /////////////////////////---------------------------
-
-
     @Test
     public void testPostTodoToCategory() {
         String todoId = CategoriesHelper.createTodo();
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("id", todoId);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + todoId)
+                .body(requestBody.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
     }
 
     @Test
@@ -376,29 +405,33 @@ public class CategoriesTests {
 
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody1 = new JSONObject();
+        requestBody1.put("id", todoId1);
+
+        JSONObject requestBody2 = new JSONObject();
+        requestBody2.put("id", todoId2);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + todoId1)
+                .body(requestBody1.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId1));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + todoId2)
+                .body(requestBody2.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId2));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
@@ -409,8 +442,8 @@ public class CategoriesTests {
 
                 .then()
                 .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId1))
-                .assertThat().body(containsString("id: " + todoId2));
+                .assertThat().body(containsString("id\":\"" + todoId1))
+                .assertThat().body(containsString("id\":\"" + todoId2));
     }
 
     @Test
@@ -420,29 +453,33 @@ public class CategoriesTests {
 
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody1 = new JSONObject();
+        requestBody1.put("id", todoId1);
+
+        JSONObject requestBody2 = new JSONObject();
+        requestBody2.put("id", todoId2);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + todoId1)
+                .body(requestBody1.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId1));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + todoId2)
+                .body(requestBody2.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId2));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
@@ -452,9 +489,7 @@ public class CategoriesTests {
                 .head("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId1))
-                .assertThat().body(containsString("id: " + todoId2));
+                .assertThat().statusCode(SUCCESS_STATUS_CODE);
     }
 
     @Test
@@ -462,17 +497,19 @@ public class CategoriesTests {
         String todoId = CategoriesHelper.createTodo();
         String categoryId = CategoriesHelper.createCategory("Test title", "Test description");
 
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("id", todoId);
+
         given()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body("id=" + todoId)
+                .body(requestBody.toJSONString())
                 .baseUri(BASEURI)
 
                 .post("/categories/" + categoryId + "/todos")
 
                 .then()
-                .assertThat().statusCode(SUCCESS_STATUS_CODE)
-                .assertThat().body(containsString("id: " + todoId));
+                .assertThat().statusCode(CREATED_STATUS_CODE);
 
         given()
                 .header("Content-Type", "application/json")
