@@ -12,17 +12,12 @@ import static APITests.ApplicationManipulation.startApplication;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-public class ProjectsTests {
+public class ProjectsTests extends BaseTestSetup {
 
     private static final int CREATED_STATUS_CODE = 201;
     private static final int OK_STATUS_CODE = 200;
     public ProjectsTests() {
         RestAssured.baseURI = "http://localhost:4567/projects";
-    }
-
-    @Before
-    public void setUp() {
-        startApplication();
     }
 
     @Test
