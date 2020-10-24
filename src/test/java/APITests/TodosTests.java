@@ -21,22 +21,22 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 
 public class TodosTests {
-	
+
 	private static final int STATUS_CODE_SUCCESS = 200;
 	private static final int STATUS_CODE_CREATED = 201;
 	private static final int STATUS_CODE_FAILURE = 400;
 	private static final int STATUS_CODE_NOT_FOUND = 404;
-	
+
 	/**
 	 * The expect array error for missing field. Used in invalid creation todo test.
 	 */
 	ArrayList<String> fieldErrorArray = new ArrayList<String>(Arrays.asList("title : field is mandatory"));
-	
+
 	/**
 	 * The expected array error for adding non existing category to todo.
 	 */
 	ArrayList<String> categoryError = new ArrayList<String>(Arrays.asList("Could not find thing matching value for id"));
-	
+
 
 	/**
 	 * Will clear the data and set up baseURI before each test
@@ -47,11 +47,11 @@ public class TodosTests {
 		RestAssured.baseURI = "http://localhost:4567";
 		ApplicationManipulation.startApplication();
 	}
-	
-//	@After
-//	public void tearDown() {
-//		ApplicationManipulation.stopApplication();
-//	}
+
+	//	@After
+	//	public void tearDown() {
+	//		ApplicationManipulation.stopApplication();
+	//	}
 
 	/**
 	 * Will test the endpoint GET /todos - get all todos created
@@ -60,12 +60,12 @@ public class TodosTests {
 	@Test
 	public void testGetAllTodos() {
 		given()
-			.get("/todos")
-			.then()
-			.assertThat()
-			.statusCode(equalTo(STATUS_CODE_SUCCESS));
+		.get("/todos")
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_SUCCESS));
 	}
-	
+
 	/**
 	 * Test: create a valid todo with only title in body.
 	 * Endpoint: POST /todos
@@ -81,12 +81,12 @@ public class TodosTests {
 		requestParams.put("title", title);
 
 		request.body(requestParams.toJSONString());
-		
+
 		request.post("/todos")
-			.then()
-			.assertThat()
-			.statusCode(equalTo(STATUS_CODE_CREATED))
-			.body("title", equalTo(title));
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_CREATED))
+		.body("title", equalTo(title));
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class TodosTests {
 		String title = "Must complete ECSE429 project";
 		boolean doneStatus = false;
 		String description =  "This project must be completed by monday";
-		
+
 
 		RequestSpecification request = RestAssured.given();
 
@@ -110,12 +110,12 @@ public class TodosTests {
 		request.body(requestParams.toJSONString());
 
 		request.post("/todos")
-			.then()
-			.assertThat()
-			.statusCode(equalTo(STATUS_CODE_CREATED))
-			.body("title", equalTo(title),
-					"description", equalTo(description), 
-					"doneStatus", equalTo(String.valueOf(doneStatus)));
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_CREATED))
+		.body("title", equalTo(title),
+				"description", equalTo(description), 
+				"doneStatus", equalTo(String.valueOf(doneStatus)));
 	}
 
 	/**
@@ -125,17 +125,17 @@ public class TodosTests {
 	@Test 
 	public void testCreateTodoNoTitle() {
 		RequestSpecification request = RestAssured.given();
-		
+
 		request.header("Content-Type", "application/json");
-        request.header("Accept", "application/json");
-        
+		request.header("Accept", "application/json");
+
 		request.post("/todos")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_FAILURE))
-				.body("errorMessages", equalTo(fieldErrorArray));
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_FAILURE))
+		.body("errorMessages", equalTo(fieldErrorArray));
 	}
-	
+
 	/**
 	 * Test: todo can be found by it's ID in the URL
 	 * Endpoint: GET /todos/:id
@@ -143,20 +143,20 @@ public class TodosTests {
 	@Test
 	public void testGetTodoById() {
 		String todoTitle = "Dummy TODO";
-		
+
 		try {
 			int todoID = createTodo(todoTitle);
 			get("/todos/" + todoID)
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_SUCCESS))
-				.body("todos[0].title", equalTo(todoTitle));
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS))
+			.body("todos[0].title", equalTo(todoTitle));
 		}catch (Exception e) {
 			System.out.println(e);
 			Assert.fail();
 		}
 	}
-	
+
 	/**
 	 * Test: todo can be found by it's title (query parameter)
 	 * Endpoint: GET /todos?title=$todo_title$
@@ -164,74 +164,195 @@ public class TodosTests {
 	@Test
 	public void testGetTodoByTitle() {
 		String todoTitle = "Dummy TODO";
-		
+
 		try {
 			createTodo(todoTitle);
 			given().queryParam("title", todoTitle)
-				.get("/todos")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_SUCCESS))
-				.body("todos[0].title", equalTo(todoTitle));
+			.get("/todos")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS))
+			.body("todos[0].title", equalTo(todoTitle));
 		}catch (Exception e) {
 			System.out.println(e);
 			Assert.fail();
 		}
 	}
 
-	// THESE TESTS ARE FOR ENDPOINT TASKOF WHICH DOES NOT WORK AS DOUCMENTED
-//	@Test
-//	public void testAddTodoToProject() {
-//		String projectName = "Dummy project";
-//		String todoName = "Dummy todo";
-//		
-//		try {
-//			int projectId = createProject(projectName);
-//			int todoId = createTodo(todoName);
-//			
-//			// make sure that the 
-//			RequestSpecification requestPost = RestAssured.given();
-//			JSONObject requestParams = new JSONObject();
-//			requestParams.put("id", projectId);
-	
-//			requestPost.body(requestParams.toJSONString());
-//			
-//			requestPost
-//				.post("/todos/" + todoId + "/taskof")
-//				.then()
-//				.assertThat()
-//				.statusCode(equalTo(STATUS_CODE_SUCCESS));
-//			
-//			
-//			RequestSpecification requestGet = RestAssured.given();
-//			
-//			requestGet
-//				.get("/todos/" + todoId + "/taskof")
-//				.then()
-//				.assertThat()
-//				.body("", "")
-//				
-//		} catch (Exception e) {
-//			System.out.println(e);
-//			Assert.fail();
-//		}
-//	}
-//
-//	@Test
-//	public void testAddTodoToNonExistingProject() {
-//// POST /todos/:id/tasksof
-//	}
-//
-//	@Test
-//	public void testRemoveTodoFromProject() {
-////DELETE /todos/:id/tasksof/:id
-//	}
-//
-//	@Test
-//	public void testGetAllTodoProjects() {
-//// GET /todos/:id/tasksof
-//	}
-	
+	/**
+	 * Test: a todo can be added to a project
+	 * Endpoint: POST /todos/:id/tasksof
+	 */
+	@Test
+	public void testAddProjectToTodo() {
+		String projectName = "Dummy category";
+		String todoName = "Dummy todo";
+
+		try {
+			int projectId = createProject(projectName);
+			int todoId = createTodo(todoName);
+
+			// add the category to the todo
+			RequestSpecification requestPost = RestAssured.given();
+			JSONObject requestParams = new JSONObject();
+			requestParams.put("id", String.valueOf(projectId));
+
+			requestPost.body(requestParams.toJSONString());
+
+			requestPost
+			.post("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
+			// Assert that it is present
+			get("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS))
+			.body("projects[0].id", equalTo(String.valueOf(projectId)),
+					"projects[0].title", equalTo(String.valueOf(projectName)));
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			Assert.fail();
+		}
+	}
+
+	/**
+	 * Test: adding a todo to a non existing project fails
+	 * Endpoint: POST /todos/:id/tasksof
+	 */
+	@Test
+	public void testAddTodoToNonExistingProject() {
+		String todoName = "Dummy todo";
+
+		try {
+			int projectId = 200000;
+			int todoId = createTodo(todoName);
+
+			// add the category to the todo
+			RequestSpecification requestPost = RestAssured.given();
+			JSONObject requestParams = new JSONObject();
+			requestParams.put("id", String.valueOf(projectId));
+
+			requestPost.body(requestParams.toJSONString());
+
+			requestPost
+			.post("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_NOT_FOUND));
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			Assert.fail();
+		}
+	}
+
+	/**
+	 * Test: deleting a todo from a project works
+	 * Endpoint: DELETE /todos/:id/tasksof/:id
+	 */
+	@Test
+	public void testRemoveTodoFromProject() {
+		String projectName = "Dummy category";
+		String todoName = "Dummy todo";
+
+		try {
+			int projectId = createProject(projectName);
+			int todoId = createTodo(todoName);
+
+			// add the category to the todo
+			RequestSpecification requestPost = RestAssured.given();
+			JSONObject requestParams = new JSONObject();
+			requestParams.put("id", String.valueOf(projectId));
+
+			requestPost.body(requestParams.toJSONString());
+
+			// add the connection
+			requestPost
+			.post("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
+			//delete it
+			delete("/todos/" + todoId + "/tasksof/" + projectId)
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS));
+
+			// Make sure it was successfully deleted
+			Response response = get("/todos/" + todoId + "/tasksof");
+
+			assertEquals(response.statusCode(),STATUS_CODE_SUCCESS);
+			assertNotEquals(response.jsonPath().get("projects[0].id"), String.valueOf(projectId));
+			assertNotEquals(response.jsonPath().get("projects[0].title"), projectName);
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			Assert.fail();
+		}
+	}
+
+	/**
+	 * Test: get all projects that have this todo
+	 * Endpoint: GET /todos/:id/tasksof
+	 */
+	@Test
+	public void testGetAllTodoProjects() {
+		String projectName = "Dummy project";
+		String projectName2 = "Dummy project 2";
+		String todoName = "Dummy todo";
+
+		try {
+			int projectId = createProject(projectName);
+			int projectId2 = createProject(projectName2);
+			int todoId = createTodo(todoName);
+
+			// add todo to first project
+			RequestSpecification requestPost = RestAssured.given();
+			JSONObject requestParams = new JSONObject();
+			requestParams.put("id", String.valueOf(projectId));
+
+			requestPost.body(requestParams.toJSONString());
+
+			requestPost
+			.post("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
+			// add todo to second project
+			RequestSpecification requestPost2 = RestAssured.given();
+			JSONObject requestParams2 = new JSONObject();
+			requestParams2.put("id", String.valueOf(projectId2));
+
+			requestPost2.body(requestParams2.toJSONString());
+
+			requestPost2
+			.post("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
+
+			// make sure it has both
+			RequestSpecification requestGet = RestAssured.given();
+
+			requestGet
+			.get("/todos/" + todoId + "/tasksof")
+			.then()
+			.assertThat()
+			.body("projects.size()", equalTo(2));
+
+		} catch (Exception e) {
+			System.out.println(e);
+			Assert.fail();
+		}
+	}
+
 	/**
 	 * Test: adding a category to a todo 
 	 * EndpointL POST /todos/:id/categories
@@ -240,38 +361,38 @@ public class TodosTests {
 	public void testAddCategoryToTodo() {
 		String categoryName = "Dummy category";
 		String todoName = "Dummy todo";
-		
+
 		try {
 			int categoryId = createCategory(categoryName);
 			int todoId = createTodo(todoName);
-			
+
 			// add the category to the todo
 			RequestSpecification requestPost = RestAssured.given();
 			JSONObject requestParams = new JSONObject();
 			requestParams.put("id", String.valueOf(categoryId));
-			
+
 			requestPost.body(requestParams.toJSONString());
-			
+
 			requestPost
-				.post("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_CREATED));
-			
+			.post("/todos/" + todoId + "/categories")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
 			// Assert that it is present
 			get("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_SUCCESS))
-				.body("categories[0].id", equalTo(String.valueOf(categoryId)),
-						"categories[0].title", equalTo(String.valueOf(categoryName)));
-				
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS))
+			.body("categories[0].id", equalTo(String.valueOf(categoryId)),
+					"categories[0].title", equalTo(String.valueOf(categoryName)));
+
 		} catch (Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 			Assert.fail();
 		}
 	}
-	
+
 	/**
 	 * Test: that adding a non existing category to a todo fails
 	 * EndpointL POST /todos/:id/categories
@@ -280,30 +401,30 @@ public class TodosTests {
 	public void testAddNonExistingCategoryToTodo() {
 		String todoName = "Dummy todo";
 		String randomHugeId = "99999999991";
-		
+
 		try {
 			int todoId = createTodo(todoName);
-			
+
 			// add the non existing category to todo - make sure it fails
 			RequestSpecification requestPost = RestAssured.given();
 			JSONObject requestParams = new JSONObject();
 			requestParams.put("id", randomHugeId);
-			
+
 			requestPost.body(requestParams.toJSONString());
-			
+
 			requestPost
-				.post("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_NOT_FOUND))
-				.body("errorMessages", equalTo(categoryError));
-				
+			.post("/todos/" + todoId + "/categories")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_NOT_FOUND))
+			.body("errorMessages", equalTo(categoryError));
+
 		} catch (Exception e) {
 			System.out.println(e);
 			Assert.fail();
 		}
 	}
-	
+
 	/**
 	 * Test: if a category can be removed from a todo
 	 * Endpoint: DELETE /todos/:id/categories/:id
@@ -312,41 +433,41 @@ public class TodosTests {
 	public void testRemoveCategoryFromTodo() {
 		String categoryName = "Dummy category";
 		String todoName = "Dummy todo";
-		
+
 		try {
 			int categoryId = createCategory(categoryName);
 			int todoId = createTodo(todoName);
-			
+
 			// Add the category to todo
 			RequestSpecification requestPost = RestAssured.given();
 			JSONObject requestParams = new JSONObject();
 			requestParams.put("id", String.valueOf(categoryId));
 			requestPost.body(requestParams.toJSONString());		
 			requestPost
-				.post("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_CREATED));
-			
+			.post("/todos/" + todoId + "/categories")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
 			// Delete the connection
 			delete("/todos/" + todoId + "/categories/" + categoryId)
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_SUCCESS));
-			
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS));
+
 			// Make sure it was successfully deleted
 			Response response = get("/todos/" + todoId + "/categories");
-			
+
 			assertEquals(response.statusCode(),STATUS_CODE_SUCCESS);
 			assertNotEquals(response.jsonPath().get("categories[0].id"), String.valueOf(categoryId));
 			assertNotEquals(response.jsonPath().get("categories[0].title"), categoryName);
-				
+
 		} catch (Exception e) {
 			System.out.println(e);
 			Assert.fail();
 		}
 	}
-	
+
 	/**
 	 * Test: if all categories can be found from a todo
 	 * Endpoint: GET /todos/:id/categories
@@ -356,50 +477,47 @@ public class TodosTests {
 		String categoryName = "Dummy category";
 		String categoryName2 = "Dummy category2";
 		String todoName = "Dummy todo";
-		
+
 		try {
 			int categoryId = createCategory(categoryName);
 			int categoryId2 = createCategory(categoryName2);
 			int todoId = createTodo(todoName);
-			
+
 			// add category 1 to todo
 			RequestSpecification requestPost = RestAssured.given();
 			JSONObject requestParams = new JSONObject();
 			requestParams.put("id", String.valueOf(categoryId));
 			requestPost.body(requestParams.toJSONString());
 			requestPost
-				.post("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_CREATED));
-			
+			.post("/todos/" + todoId + "/categories")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
 			// add category 2 to todo
 			RequestSpecification requestPost2 = RestAssured.given();
 			JSONObject requestParams2 = new JSONObject();
 			requestParams2.put("id", String.valueOf(categoryId2));
 			requestPost2.body(requestParams2.toJSONString());
 			requestPost2
-				.post("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_CREATED));
-			
+			.post("/todos/" + todoId + "/categories")
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_CREATED));
+
 			// Make sure we can get all categories
 			get("/todos/" + todoId + "/categories")
-				.then()
-				.assertThat()
-				.statusCode(equalTo(STATUS_CODE_SUCCESS))
-				.body("categories[0].id", equalTo(String.valueOf(categoryId)),
-						"categories[0].title", equalTo(String.valueOf(categoryName)),
-						"categories[1].id", equalTo(String.valueOf(categoryId2)),
-						"categories[1].title", equalTo(String.valueOf(categoryName2)));
-				
+			.then()
+			.assertThat()
+			.statusCode(equalTo(STATUS_CODE_SUCCESS))
+			.body("categories.size()", equalTo(2));
+
 		} catch (Exception e) {
 			System.out.println(e);
 			Assert.fail();
 		}
 	}
-	
+
 	/**
 	 * This function creates a Todo.
 	 * 
@@ -414,20 +532,20 @@ public class TodosTests {
 
 		JSONObject requestParams = new JSONObject();
 		requestParams.put("title", titleOfTodo);
-		
+
 		request.body(requestParams.toJSONString());
-		
+
 		Response response = request.post("/todos");
-		
+
 		if (response.statusCode() != STATUS_CODE_CREATED) {
 			throw new Exception("Could not create dummy TODO");
 		}
-		
+
 		// want to return the 'Object' value of JSON field "id" as int
 		int todoID = Integer.parseInt((String) response.jsonPath().get("id"));
 		return todoID;
 	}
-	
+
 	/**
 	 * This function will create a project.
 	 * 
@@ -442,15 +560,15 @@ public class TodosTests {
 
 		JSONObject requestParams = new JSONObject();
 		requestParams.put("title", projectName);
-		
+
 		request.body(requestParams.toJSONString());
-		
+
 		Response response = request.post("/projects");
-		
+
 		if (response.statusCode() != STATUS_CODE_CREATED) {
 			throw new Exception("Could not create dummy project");
 		}
-		
+
 		int projectID = Integer.parseInt((String) response.jsonPath().get("id"));
 		return projectID;
 	}
@@ -469,15 +587,15 @@ public class TodosTests {
 
 		JSONObject requestParams = new JSONObject();
 		requestParams.put("title", categoryName);
-		
+
 		request.body(requestParams.toJSONString());
-		
+
 		Response response = request.post("/categories");
-		
+
 		if (response.statusCode() != STATUS_CODE_CREATED) {
 			throw new Exception("Could not create dummy category");
 		}
-		
+
 		int categoryID = Integer.parseInt((String) response.jsonPath().get("id"));
 		return categoryID;
 	}
