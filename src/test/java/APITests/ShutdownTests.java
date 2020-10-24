@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import org.junit.Test;
 
 import io.restassured.response.Response;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class ShutdownTests {
 
