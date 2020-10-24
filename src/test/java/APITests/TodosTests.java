@@ -20,7 +20,7 @@ import java.util.Arrays;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 
-public class TodosTests {
+public class TodosTests extends BaseTestSetup {
 
 	private static final int STATUS_CODE_SUCCESS = 200;
 	private static final int STATUS_CODE_CREATED = 201;
@@ -36,22 +36,6 @@ public class TodosTests {
 	 * The expected array error for adding non existing category to todo.
 	 */
 	ArrayList<String> categoryError = new ArrayList<String>(Arrays.asList("Could not find thing matching value for id"));
-
-
-	/**
-	 * Will clear the data and set up baseURI before each test
-	 * 
-	 */
-	@Before 
-	public void setUp() {
-		RestAssured.baseURI = "http://localhost:4567";
-		ApplicationManipulation.startApplication();
-	}
-
-	//	@After
-	//	public void tearDown() {
-	//		ApplicationManipulation.stopApplication();
-	//	}
 
 	/**
 	 * Will test the endpoint GET /todos - get all todos created
