@@ -3,19 +3,23 @@ package APITests;
 import java.io.IOException;
 
 import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
 
 public class ApplicationManipulation {
 
-    public static void startApplication() {
+    private static Process process;
+
+    public static Process startApplication() throws InterruptedException {
         Runtime rt = Runtime.getRuntime();
         try {
-            Process pr = rt.exec("java -jar runTodoManagerRestAPI-1.5.5.jar");
+            process = rt.exec("java -jar runTodoManagerRestAPI-1.5.5.jar");
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return process;
     }
 
     public static void stopApplication() {
-        get("http://localhost:4567/shutdown");
+        process.destroy();
     }
 }
