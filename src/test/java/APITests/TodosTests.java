@@ -15,8 +15,11 @@ import static io.restassured.RestAssured.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -44,6 +47,75 @@ public class TodosTests extends BaseTestSetup {
 	public TodosTests() {
 		RestAssured.baseURI = "http://localhost:4567";
 	}
+	
+	/**
+	 * Test that it can run from the command lind
+	 * @throws IOException
+	 */
+	@Test
+    public void testGetAllTodosCommandLineQuery() throws IOException {
+        String title1 = "todo DUMMY";
+        try {
+	        createTodo(title1);
+	
+	        String curlRequest = "curl -v http://localhost:4567/todos";
+	        java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(curlRequest).getInputStream()).useDelimiter("\\A");
+	        String response = s.hasNext() ? s.next() : "";
+	
+	        assert (response.contains(title1));
+        }catch (Exception e) {
+			System.out.println(e);
+			Assert.fail();
+		}
+    }
+
+	/**
+	 * Test that xml can be inputted.
+	 * @throws ParserConfigurationException
+	 */
+    @Test
+    public void testCreateTodoXML() throws ParserConfigurationException {
+        String title = "todo DUMMY";
+        StringBuilder xmlBuilder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        xmlBuilder.append("<todo>").append("<title>" + title + "</title>");
+        xmlBuilder.append("</todo>");
+
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/xml");
+        request.header("Accept", "application/xml");
+
+        request.body(xmlBuilder.toString());
+
+        request.when().post("/todos").then().
+                assertThat().
+                statusCode(equalTo(STATUS_CODE_CREATED));
+    }
+    
+	/**
+	 * Test that request fails if xml is not structured correctly.
+	 * @throws ParserConfigurationException
+	 */
+    @Test
+    public void testCreateTodoBadXML() throws ParserConfigurationException {
+        String title = "todo DUMMY";
+        StringBuilder xmlBuilder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        xmlBuilder.append("<randomness").append("<title>" + title + "</title>");
+        xmlBuilder.append("</todo>");
+
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/xml");
+        request.header("Accept", "application/xml");
+
+        request.body(xmlBuilder.toString());
+
+        request.when().post("/todos").then().
+                assertThat().
+                statusCode(equalTo(STATUS_CODE_FAILURE));
+    }
 
 	/**
 	 * Will test the endpoint GET /todos - get all todos created

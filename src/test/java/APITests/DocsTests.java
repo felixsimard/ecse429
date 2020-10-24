@@ -10,13 +10,12 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import static io.restassured.path.xml.XmlPath.CompatibilityMode.HTML;
 
-import static APITests.ApplicationManipulation.startApplication;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.junit.Assert;
 
-public class DocsTests {
+public class DocsTests extends BaseTestSetup {
 
 	private static final int CREATED_STATUS_CODE = 201;
 	private static final int OK_STATUS_CODE = 200;
@@ -24,11 +23,6 @@ public class DocsTests {
 
 	public DocsTests() {
 		RestAssured.baseURI = "http://localhost:4567/docs";
-	}
-
-	@Before
-	public void setUp() {
-		startApplication();
 	}
 
 	@Test

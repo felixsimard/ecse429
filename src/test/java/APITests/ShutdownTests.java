@@ -1,6 +1,8 @@
 package APITests;
 
 import static io.restassured.RestAssured.get;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,88 +10,54 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import junit.framework.Assert;
+import io.restassured.specification.RequestSpecification;
 
-public class ShutdownTests {
+import org.junit.Assert;
 
-	String url = "http://localhost:4567/";
-	String endpoint = "shutdown";
+public class ShutdownTests extends BaseTestSetup {
 
-	String api = url + endpoint;
+	private static final int OK_STATUS_CODE = 200;
 
-	public void restartApi() {
-		Process ps;
-
-		Response res = get(api);
-
-		if (res != null) {
-			if (res.getStatusCode() == 200) {
-				System.out.println("Starting API server...");
-
-				restartApplication();
-
-				/*
-				 * try { //ps = Runtime.getRuntime().exec(new
-				 * String[]{"java","-jar","runTodoManagerRestAPI-1.5.5.jar"}); //ps.waitFor(); }
-				 * catch (IOException e) { e.printStackTrace(); } catch (InterruptedException e)
-				 * { e.printStackTrace(); }
-				 */
-			}
-		}
-	}
-
-	public static void restartApplication() {
-		final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-		final File currentJar = new File("runTodoManagerRestAPI-1.5.5.jar");
-
-		// is it a jar file?
-		if (!currentJar.getName().endsWith(".jar"))
-			return;
-
-		// Build command: java -jar application.jar
-		final ArrayList<String> command = new ArrayList<String>();
-		command.add(javaBin);
-		command.add("-jar");
-		command.add(currentJar.getPath());
-
-		System.out.println("Starting API server...");
-
-		final ProcessBuilder builder = new ProcessBuilder(command);
-		try {
-			builder.start();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.exit(0);
+	public ShutdownTests() {
+		RestAssured.baseURI = "http://localhost:4567/shutdown";
 	}
 
 	@Test
 	public void testShutdownApiServer() throws InterruptedException {
-		
+			
 		String error = "";
+		RequestSpecification request = given();
+		request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
 		
+		// Assert that application is currently running
 		try {
-			Response res = get(api);
+	        request.get("http://localhost:4567/").then().
+	        			assertThat().
+	        			statusCode(equalTo(OK_STATUS_CODE));
+		} catch (Exception e) {
+			System.out.println("Shutdown Test: Application is initially not running.");
+		}
+		
+		// Request the shutdown endpoint
+		try {
+			request.get();
+		} catch (Exception e) {
+			System.out.println("Shutdown Test: Shutdown endpoint called.");
+		}
+		
+		// Assert that application is shutdown (not running)
+		try {
+			Response res = get("http://localhost:4567/");
 			String body = res.getBody().asString();
 			System.out.println(body);
 		} catch (Exception e) {
 			error = e.toString();
 			System.out.println(error);
 		}
-		
 		Assert.assertEquals(error.toString().contains("Connection refused"), true);
-		
-		// Below does not work... it restarts the app but causes the test to fail... although the test is good and passes without the stuff below
-		restartApplication();
-		Thread.sleep(3000);
-		
-		//System.out.println(error);
-		//System.out.println(error.toString().contains("Connection refused"));
-		
-
 
 	}
-
 }
