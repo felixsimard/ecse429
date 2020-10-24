@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
+import io.restassured.path.xml.XmlPath;
 import io.restassured.response.*;
 import io.restassured.specification.RequestSpecification;
 
@@ -20,7 +21,7 @@ import java.util.Arrays;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 
-public class TodosTests {
+public class TodosTests extends BaseTestSetup {
 
 	private static final int STATUS_CODE_SUCCESS = 200;
 	private static final int STATUS_CODE_CREATED = 201;
@@ -37,21 +38,12 @@ public class TodosTests {
 	 */
 	ArrayList<String> categoryError = new ArrayList<String>(Arrays.asList("Could not find thing matching value for id"));
 
-
 	/**
-	 * Will clear the data and set up baseURI before each test
-	 * 
+	 * Constructor which sets the base uri before runnning the tests.
 	 */
-	@Before 
-	public void setUp() {
+	public TodosTests() {
 		RestAssured.baseURI = "http://localhost:4567";
-		ApplicationManipulation.startApplication();
 	}
-
-	//	@After
-	//	public void tearDown() {
-	//		ApplicationManipulation.stopApplication();
-	//	}
 
 	/**
 	 * Will test the endpoint GET /todos - get all todos created
@@ -74,6 +66,52 @@ public class TodosTests {
 	public void testCreateTodoValidInfo() {
 
 		String title = "Must complete ECSE429 project";
+
+		RequestSpecification request = RestAssured.given();
+
+		JSONObject requestParams = new JSONObject();
+		requestParams.put("title", title);
+
+		request.body(requestParams.toJSONString());
+
+		request.post("/todos")
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_CREATED))
+		.body("title", equalTo(title));
+	}
+	
+	/**
+	 * Test: create a valid todo with int as title.
+	 * Endpoint: POST /todos
+	 */
+	@Test
+	public void testCreateTodoNumberAsTitleSuccess() {
+
+		int title = 4;
+
+		RequestSpecification request = RestAssured.given();
+
+		JSONObject requestParams = new JSONObject();
+		requestParams.put("title", title);
+
+		request.body(requestParams.toJSONString());
+
+		request.post("/todos")
+		.then()
+		.assertThat()
+		.statusCode(equalTo(STATUS_CODE_CREATED))
+		.body("title", equalTo(String.valueOf((float) title)));
+	}
+	
+	/**
+	 *Test: create a valid todo with int as title but show it fails.
+	 * Endpoint: POST /todos
+	 */
+	@Test
+	public void testCreateTodoNumberAsTitleFailure() {
+
+		int title = 4;
 
 		RequestSpecification request = RestAssured.given();
 
