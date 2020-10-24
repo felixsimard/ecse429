@@ -1,28 +1,63 @@
 package APITests;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import static io.restassured.path.xml.XmlPath.CompatibilityMode.HTML;
 
+import static APITests.ApplicationManipulation.startApplication;
 import static io.restassured.RestAssured.*;
+import static org.hamcrest.core.IsEqual.equalTo;
+
+import org.junit.Assert;
 
 public class DocsTests {
-	
-	String url = "http://localhost:4567/";
-	String endpoint = "docs";
-	
-	String api = url + endpoint;
-	
+
+	private static final int CREATED_STATUS_CODE = 201;
+	private static final int OK_STATUS_CODE = 200;
+	private static final String EXPECTED_HTML_DOC_TITLE = "API Documentation";
+
+	public DocsTests() {
+		RestAssured.baseURI = "http://localhost:4567/docs";
+	}
+
+	@Before
+	public void setUp() {
+		startApplication();
+	}
+
 	@Test
 	public void testPageLoad() {
-		int code  = get(api).getStatusCode();
-		Assert.assertEquals(code,  200);
+		
+		RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+        
+        request.get().then().
+        			assertThat().
+        			statusCode(equalTo(OK_STATUS_CODE));
 	}
-	
+
 	@Test
 	public void testBodyAsHtml() {
-		String body = get(api).getBody().asString();
-		Assert.assertEquals(body.contains("<html>"), true);
+		
+		RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+        
+        Response res = request.get().then().contentType(ContentType.HTML).extract().response();
+        
+        XmlPath htmlpath = new XmlPath(HTML, res.getBody().asString());
+        
+        Assert.assertEquals(htmlpath.getString("html.head.title"), EXPECTED_HTML_DOC_TITLE);
+
 	}
 
 }
