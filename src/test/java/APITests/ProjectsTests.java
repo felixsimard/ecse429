@@ -364,9 +364,9 @@ public class ProjectsTests extends BaseTestSetup {
         request.header("Accept", "application/json");
         request.body(requestBody);
         int id;
-
+  
         try {
-            id = Integer.parseInt(request.post().then().extract().path("id"));
+            id = Integer.parseInt(request.post().then().extract().path("id").toString());
         } catch (Exception e) {
             return -1;
         }
