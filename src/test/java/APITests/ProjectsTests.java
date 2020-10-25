@@ -67,6 +67,44 @@ public class ProjectsTests extends BaseTestSetup {
     }
 
     @Test
+    public void testCreateProjectNumberAsTitleSuccess() {
+
+        int title = 4;
+
+        RequestSpecification request = RestAssured.given();
+
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("title", title);
+
+        request.body(requestParams.toJSONString());
+
+        request.post()
+                .then()
+                .assertThat()
+                .statusCode(equalTo(CREATED_STATUS_CODE))
+                .body("title", equalTo(String.valueOf((float) title)));
+    }
+
+    @Test
+    public void testCreateProjectNumberAsTitleFailure() {
+
+        int title = 4;
+
+        RequestSpecification request = RestAssured.given();
+
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("title", title);
+
+        request.body(requestParams.toJSONString());
+
+        request.post()
+                .then()
+                .assertThat()
+                .statusCode(equalTo(CREATED_STATUS_CODE))
+                .body("title", equalTo(title));
+    }
+
+    @Test
     public void testCreateProjectWithInvalidCompletedType() {
         RequestSpecification request = given();
 
@@ -142,6 +180,167 @@ public class ProjectsTests extends BaseTestSetup {
                         "response.description", equalTo(String.valueOf("")));
     }
 
+    @Test
+    public void testGetProjectById() {
+        String title = "proj";
+
+        int id = createValidProject(title, false, false, "");
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.when().get("/" + id).then().assertThat().
+                statusCode(OK_STATUS_CODE).
+                body("projects[0].title", equalTo(title));
+    }
+
+    @Test
+    public void testAmmendProjectById() {
+        String oldTitle = "old title";
+        String newTitle = "new title";
+
+        int id = createValidProject(oldTitle, false, false, "");
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        String requestBody = withValidInfo(newTitle, false, false, "");
+
+        request.body(requestBody);
+
+        request.when().post("/" + id).then().assertThat().
+                statusCode(OK_STATUS_CODE).
+                body("title", equalTo(newTitle));
+    }
+
+    @Test
+    public void testDeleteExistingProject() {
+        String title = "proj to delete";
+
+        int id = createValidProject(title, false, false, "");
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/xml");
+        request.header("Accept", "application/xml");
+
+        request.when().delete("/" + id).then().
+                assertThat().
+                statusCode(OK_STATUS_CODE);
+
+        RequestSpecification getAllProjectsRequest = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        Response response = request.when().get().then().assertThat().statusCode(OK_STATUS_CODE).contentType(ContentType.JSON).extract().response();
+
+        String ids = response.jsonPath().getString("projects.id");
+
+        assert (!ids.contains("" + id));
+    }
+
+    @Test
+    public void testAddCategoryRelationshipToProject() {
+        int id = createValidProject("proj", false, false, "");
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.body("{ \"id\": \"1\"}");
+
+        request.when().post("/" + id + "/categories").then().assertThat().
+                statusCode(CREATED_STATUS_CODE);
+    }
+
+    @Test
+    public void testDeleteCategoryRelationshipWithProject() {
+        int id = createValidProject("proj", false, false, "");
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.body("{ \"id\": \"1\"}");
+
+        request.when().post("/" + id + "/categories").then().assertThat().
+                statusCode(CREATED_STATUS_CODE);
+
+        request.when().delete("/" + id + "/categories/" + 1).then().assertThat().
+                statusCode(OK_STATUS_CODE);
+    }
+
+    @Test
+    public void testAddTaskRelationshipWithProject() {
+        int id = createValidProject("proj", false, false, "");
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.body("{ \"id\": \"1\"}");
+
+        request.when().post("/" + id + "/tasks").then().assertThat().
+                statusCode(CREATED_STATUS_CODE);
+    }
+
+    @Test
+    public void testDeleteTaskRelationshipWithProject() {
+        int id = createValidProject("proj", false, false, "");
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.body("{ \"id\": \"1\"}");
+
+        request.when().post("/" + id + "/tasks").then().assertThat().
+                statusCode(CREATED_STATUS_CODE);
+
+        request.when().delete("/" + id + "/tasks/" + 1).then().assertThat().
+                statusCode(OK_STATUS_CODE);
+    }
+
+    @Test
+    public void testCreateProjectBadXML() throws ParserConfigurationException {
+        String title = "project DUMMY";
+        StringBuilder xmlBuilder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        xmlBuilder.append("<proj>").append("<title>" + title + "</title>");
+        xmlBuilder.append("</project>");
+
+
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/xml");
+        request.header("Accept", "application/xml");
+
+        request.body(xmlBuilder.toString());
+
+        request.when().post().then().
+                assertThat().
+                statusCode(equalTo(BAD_REQUEST_STATUS_CODE));
+    }
+
+    @Test
+    public void testCreateProjectBadJSON() {
+        RequestSpecification request = given();
+
+        request.header("Content-Type", "application/json");
+        request.header("Accept", "application/json");
+
+        request.body("{ \"badJson\" : bad");
+
+
+        request.when().post().then().assertThat().statusCode(BAD_REQUEST_STATUS_CODE);
+    }
+
     private String withValidInfo(String title, boolean completed, boolean active, String description) {
         JSONObject requestParams = new JSONObject();
         requestParams.put("title", title);
@@ -157,17 +356,22 @@ public class ProjectsTests extends BaseTestSetup {
         return requestParams.toJSONString();
     }
 
-    private boolean createValidProject(String title, boolean completed, boolean active, String description) {
+    private int createValidProject(String title, boolean completed, boolean active, String description) {
         RequestSpecification request = given();
 
         String requestBody = withValidInfo(title, completed, active, description);
         request.header("Content-Type", "application/json");
         request.header("Accept", "application/json");
         request.body(requestBody);
+        int id;
 
-        int statusCode = request.post().statusCode();
+        try {
+            id = Integer.parseInt(request.post().then().extract().path("id"));
+        } catch (Exception e) {
+            return -1;
+        }
 
-        return statusCode == CREATED_STATUS_CODE;
+        return id;
     }
 
 }
