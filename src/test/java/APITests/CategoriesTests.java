@@ -9,7 +9,7 @@ import javax.security.auth.login.CredentialException;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.CoreMatchers.*;
 
-public class CategoriesTests {
+public class CategoriesTests extends BaseTestSetup{
 
     private static final String BASEURI = "http://localhost:4567";
     private static final int SUCCESS_STATUS_CODE = 200;
